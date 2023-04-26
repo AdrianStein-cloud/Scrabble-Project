@@ -1,23 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleProject\\ScrabbleProject.fsproj": {}
+    "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleProject\\ScrabbleProject.fsproj": {}
   },
   "projects": {
-    "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleBot\\ScrabbleBot.fsproj": {
+    "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleBot\\ScrabbleBot.fsproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleBot\\ScrabbleBot.fsproj",
+        "projectUniqueName": "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleBot\\ScrabbleBot.fsproj",
         "projectName": "ScrabbleBot",
-        "projectPath": "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleBot\\ScrabbleBot.fsproj",
-        "packagesPath": "C:\\Users\\Adrian\\.nuget\\packages\\",
-        "outputPath": "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleBot\\obj\\",
+        "projectPath": "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleBot\\ScrabbleBot.fsproj",
+        "packagesPath": "C:\\Users\\lukas\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleBot\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Adrian\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\lukas\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -25,7 +22,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\sdk\\7.0.202\\FSharp\\library-packs": {},
+          "C:\\Program Files\\dotnet\\sdk\\6.0.400\\FSharp\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -38,19 +35,6 @@
       "frameworks": {
         "net7.0": {
           "targetAlias": "net7.0",
-          "dependencies": {
-            "FParsec": {
-              "target": "Package",
-              "version": "[1.1.1, )",
-              "generatePathProperty": true
-            },
-            "FSharp.Core": {
-              "include": "Runtime, Compile, Build, Native, Analyzers, BuildTransitive",
-              "target": "Package",
-              "version": "[7.0.200, )",
-              "generatePathProperty": true
-            }
-          },
           "imports": [
             "net461",
             "net462",
@@ -62,29 +46,21 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "frameworkReferences": {
-            "Microsoft.NETCore.App": {
-              "privateAssets": "all"
-            }
-          },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleProject\\ScrabbleProject.fsproj": {
+    "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleProject\\ScrabbleProject.fsproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleProject\\ScrabbleProject.fsproj",
+        "projectUniqueName": "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleProject\\ScrabbleProject.fsproj",
         "projectName": "ScrabbleProject",
-        "projectPath": "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleProject\\ScrabbleProject.fsproj",
-        "packagesPath": "C:\\Users\\Adrian\\.nuget\\packages\\",
-        "outputPath": "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleProject\\obj\\",
+        "projectPath": "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleProject\\ScrabbleProject.fsproj",
+        "packagesPath": "C:\\Users\\lukas\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleProject\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Adrian\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\lukas\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -92,15 +68,15 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\sdk\\7.0.202\\FSharp\\library-packs": {},
+          "C:\\Program Files\\dotnet\\sdk\\6.0.400\\FSharp\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net7.0": {
             "targetAlias": "net7.0",
             "projectReferences": {
-              "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleBot\\ScrabbleBot.fsproj": {
-                "projectPath": "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleBot\\ScrabbleBot.fsproj"
+              "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleBot\\ScrabbleBot.fsproj": {
+                "projectPath": "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleBot\\ScrabbleBot.fsproj"
               }
             }
           }
@@ -109,24 +85,6 @@
       "frameworks": {
         "net7.0": {
           "targetAlias": "net7.0",
-          "dependencies": {
-            "FSharp.Core": {
-              "include": "Runtime, Compile, Build, Native, Analyzers, BuildTransitive",
-              "target": "Package",
-              "version": "[7.0.200, )",
-              "generatePathProperty": true
-            },
-            "FSharp.Quotations.Evaluator": {
-              "target": "Package",
-              "version": "[2.1.0, )",
-              "generatePathProperty": true
-            },
-            "FsPickler": {
-              "target": "Package",
-              "version": "[5.3.2, )",
-              "generatePathProperty": true
-            }
-          },
           "imports": [
             "net461",
             "net462",
@@ -138,12 +96,7 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "frameworkReferences": {
-            "Microsoft.NETCore.App": {
-              "privateAssets": "all"
-            }
-          },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     }

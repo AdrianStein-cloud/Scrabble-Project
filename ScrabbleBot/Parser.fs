@@ -45,6 +45,7 @@ module internal Parser
 
     let parenthesise p = pchar '(' >*>. p .>*> pchar ')' 
 
+    let auxiliary (x : char, xs : char list) = (x :: xs) |> System.String.Concat
     let pid = ((pletter <|> pchar '_') .>>. ((palphanumeric <|> pchar '_') |> many)) |>> auxiliary
 
     

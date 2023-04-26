@@ -48,7 +48,7 @@ module internal Eval
 
        | IsVowel of cExp      (* check for vowel *)
        | IsConsonant of cExp  (* check for constant *)
-              | IsLetter of cExp     (* check for letter *)
+       | IsLetter of cExp     (* check for letter *)
        | IsDigit of cExp      (* check for digit *)
 
     let (.+.) a b = Add (a, b)

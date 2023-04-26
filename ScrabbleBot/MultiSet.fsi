@@ -1,5 +1,5 @@
-﻿module MultiSet
-    type MultiSet<'a when 'a : comparison> = { Inner : Map<'a, uint32> }
+﻿module internal MultiSet
+    type internal MultiSet<'a when 'a : comparison> = { Inner : Map<'a, uint32> }
 
     val empty : MultiSet<'a>
     val isEmpty : MultiSet<'a> -> bool

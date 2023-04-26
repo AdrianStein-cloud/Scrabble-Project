@@ -1,4 +1,4 @@
-﻿module MultiSet
+﻿module internal MultiSet
 
     type MultiSet<'a when 'a : comparison> =
         { Inner : Map<'a, uint32> }

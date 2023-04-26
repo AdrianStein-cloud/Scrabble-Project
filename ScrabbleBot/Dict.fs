@@ -1,4 +1,4 @@
-﻿module Dictionary
+﻿module internal Dictionary
     type Dictionary = { Inner : List<string> }
 
     let empty (u: unit) = { Inner = List.empty }

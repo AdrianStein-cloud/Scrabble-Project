@@ -15,7 +15,12 @@ module internal Eval
         if y = 0 then
             fail DivisionByZero
         else
-            ret (x / y)  
+            ret (x / y)
+
+    let isVowel c =
+        match System.Char.ToLower c with
+        | 'a' | 'e' | 'i' | 'o'| 'u'| 'y' -> true
+        | _ -> false
 
     type aExp =
         | N of int
@@ -105,7 +110,8 @@ module internal Eval
         | ALt (a1, a2) -> arithEval a1 >>= fun x -> arithEval a2 >>= fun y -> ret (x < y)
         | Not b -> boolEval b >>= fun x -> ret (not x)
         | Conj (b1, b2) -> boolEval b1 >>= fun x -> boolEval b2 >>= fun y -> ret (x && y)
-        | IsVowel c -> charEval c >>= fun x -> ret (x = 'a' || x = 'e' || x = 'i' || x = 'o' || x = 'u' || x = 'A' || x = 'E' || x = 'I' || x = 'O' || x = 'U')
+        | IsVowel c -> (charEval c) >>= (fun c -> isVowel c |> ret)
+        | IsConsonant c -> (charEval c) >>= (fun c -> isVowel c |> not |> ret)
         | IsLetter c -> charEval c >>= fun x -> ret (System.Char.IsLetter x)
         | IsDigit c -> charEval c >>= fun x -> ret (System.Char.IsDigit x)
 

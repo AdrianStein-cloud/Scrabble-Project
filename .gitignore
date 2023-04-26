@@ -401,3 +401,6 @@ FodyWeavers.xsd
 *.vsidx
 *.cache
 *.suo
+
+*/obj/*
+*/bin/*

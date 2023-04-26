@@ -5,6 +5,7 @@
     </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="ScrapGPT.fs" />
     <Compile Include="Dict.fsi" />
     <Compile Include="Dict.fs" />
     <Compile Include="MultiSet.fsi" />

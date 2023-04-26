@@ -49,12 +49,14 @@ let main argv =
         None
         
     // Uncomment this line to call your client
-    // let players    = [("ScrapGPT", ScrabbleBot.Scrabble.startGame)]
+    let players    = [("ScrapGPT", ScrabbleBot.Scrabble.startGame)]
     let (dictionary, time) =
         time (fun () -> ScrabbleUtil.Dictionary.mkDict words dictAPI)
 
-    let players = spawnMultiples "ScrapGPT" dictionary ScrabbleBot.Scrabble.startGame 2
+    //let players = spawnMultiples "ScrapGPT" dictionary ScrabbleBot.Scrabble.startGame 2
+    //let players = [("ScrapGPT", dictionary, ScrabbleBot.Scrabble.startGame), ("OxyphenButazone", dictionary, Oxyphenbutazone.Scrabble.startGame)]
     //let players = spawnMultiples "OxyphenButazone" dictionary Oxyphenbutazone.Scrabble.startGame 2
+    
 
 
     do ScrabbleServer.Comm.startGame 

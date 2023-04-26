@@ -154,23 +154,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Adrian\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\lukas\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleBot\\ScrabbleBot.fsproj",
+      "projectUniqueName": "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleBot\\ScrabbleBot.fsproj",
       "projectName": "ScrabbleBot",
-      "projectPath": "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleBot\\ScrabbleBot.fsproj",
-      "packagesPath": "C:\\Users\\Adrian\\.nuget\\packages\\",
-      "outputPath": "D:\\Data\\Data - Dokumenter\\GitProjects\\ScrabbleProject\\ScrabbleBot\\obj\\",
+      "projectPath": "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleBot\\ScrabbleBot.fsproj",
+      "packagesPath": "C:\\Users\\lukas\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\lukas\\Desktop\\Code\\F#\\Scrabble-Project\\ScrabbleBot\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Adrian\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\lukas\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -178,7 +174,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\sdk\\7.0.202\\FSharp\\library-packs": {},
+        "C:\\Program Files\\dotnet\\sdk\\7.0.203\\FSharp\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -220,7 +216,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.203\\RuntimeIdentifierGraph.json"
       }
     }
   }

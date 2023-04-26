@@ -67,6 +67,8 @@ module Scrabble =
             if (State.playerNumber st = State.playerTurn st) then
                 // remove the force print when you move on from manual input (or when you have learnt the format)
                 forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
+
+
                 let input =  System.Console.ReadLine()
                 let move = RegEx.parseMove input
 
@@ -84,10 +86,25 @@ module Scrabble =
                 (* Successful play by you. Update your state (remove old tiles, add the new ones, change turn, etc) *)
 
                 //Update board
+                
                 //Update hand
-                //Change turn
 
-                let st' = st // This state needs to be updated
+                let remove (m : MultiSet.MultiSet<uint32>) (tilePlacementMove : coord * (uint32 * (char * int))) : MultiSet.MultiSet<uint32> = 
+                    let pieceId = tilePlacementMove |> snd |> fst
+                    MultiSet.removeSingle pieceId m
+
+                let add m p = MultiSet.add (fst p) (snd p) m
+
+                let mutable newHand = State.hand st
+                newHand <- List.fold remove newHand ms
+                newHand <- List.fold add newHand newPieces
+
+                let newState = {st with hand = newHand}
+
+                //Change turn
+                
+
+                let st' = newState // This state needs to be updated
                 aux st'
             | RCM (CMPlayed (pid, ms, points)) ->
                 (* Successful play by other player. Update your state *)

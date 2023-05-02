@@ -84,6 +84,8 @@ module Scrabble =
 
             let updatePlayerTurn (st : State.state) = st.playerTurn //(st.playerTurn + (uint32)1) % st.playerAmount
 
+            let validPositions (st : State.state) = ""
+
             match msg with
             | RCM (CMPlaySuccess(ms, points, newPieces)) ->
                 (* Successful play by you. Update your state (remove old tiles, add the new ones, change turn, etc) *)

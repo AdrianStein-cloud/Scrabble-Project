@@ -15,6 +15,7 @@ module internal Parser
         center        : coord
         defaultSquare : square
         squares       : boardFun2
+        isOnBoard : coord -> bool
     }
 
     val mkBoard : boardProg -> board

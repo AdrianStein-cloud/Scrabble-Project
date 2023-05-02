@@ -72,6 +72,9 @@ module Scrabble =
                 let input =  System.Console.ReadLine()
                 let move = RegEx.parseMove input
 
+                //let move0onboard = st.board.isOnBoard (fst move[0])
+
+
                 debugPrint (sprintf "Player %d -> Server:\n%A\n" (State.playerNumber st) move) // keep the debug lines. They are useful.
                 send cstream (SMPlay move)
             
@@ -86,7 +89,7 @@ module Scrabble =
                 (* Successful play by you. Update your state (remove old tiles, add the new ones, change turn, etc) *)
 
                 //Update board
-                
+
                 //Update hand
 
                 let remove (m : MultiSet.MultiSet<uint32>) (tilePlacementMove : coord * (uint32 * (char * int))) : MultiSet.MultiSet<uint32> = 
@@ -154,4 +157,5 @@ module Scrabble =
         let handSet = List.fold (fun acc (x, k) -> MultiSet.add x k acc) MultiSet.empty hand
 
         fun () -> playGame cstream tiles (State.mkState board dict playerNumber handSet playerTurn)
+        
         

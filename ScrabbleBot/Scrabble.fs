@@ -56,7 +56,7 @@ module State =
 module Scrabble =
     open System.Threading
 
-    let playGame cstream pieces (st : State.state) =
+    let playGame cstream (pieces : Map<uint32, tile>) (st : State.state) =
 
         let rec aux (st : State.state) =
             Print.printHand pieces (st.hand)
@@ -64,12 +64,13 @@ module Scrabble =
                 // remove the force print when you move on from manual input (or when you have learnt the format)
                 forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
 
+                let gHand = MultiSet.fold (fun s pid n -> MultiSet.add (pid, (Map.find pid pieces |> Set.map (fun t -> fst t) |> Set.toList)) n s) MultiSet.empty st.hand
+                forcePrint (sprintf "---- Moves ---- \n%A\n\n" (MoveGeneration.generateMoves st.dict st.placedPieces st.board gHand))
 
                 let input =  System.Console.ReadLine()
                 let move = RegEx.parseMove input
-
+                
                 //let move0onboard = st.board.isOnBoard (fst move[0])
-
 
                 debugPrint (sprintf "Player %d -> Server:\n%A\n" (st.playerNumber) move) // keep the debug lines. They are useful.
                 send cstream (SMPlay move)

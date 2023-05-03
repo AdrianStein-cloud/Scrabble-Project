@@ -33,30 +33,22 @@ let generateCoords (pp : Map<coord, char>) (board : board) : coord list =
         let distinctCoords = Seq.distinct coords |> Seq.toList
         distinctCoords
 
-let generateHLines (pp : Map<coord, char>) (board : board) (coords : coord list) : (coord * coord) list = 
-    let f (c : coord) : (coord * coord) =
+let generateStartCoords (pp : Map<coord, char>) (board : board) (coords : coord list) (step : coord -> coord) : coord list =
 
-        let stretch (nextCoord : coord -> coord) (c : coord) (n : int) =
-            let rec stretchR (c : coord) (n : int) =
-                let next = nextCoord c
-                if board.isOnBoard next |> not then c
-                elif Map.containsKey next pp then stretchR next n
-                elif n = 0 then c
-                else stretchR next (n - 1)
-            stretchR c n
+    let rec collect c n =
+        let next = step c
+        let backIsEmpty = Map.containsKey next pp |> not
+        match (board.isOnBoard c, Map.containsKey c pp, backIsEmpty, n) with
+        | (false, _, _, _) | (_, false, _, 0) -> Set.empty
+        | (true, true, true, n) -> Set.add c (collect next n)
+        | (true, false, true, n) -> Set.add c (collect next (n - 1))
+        | (true, false, false, n) -> collect next (n - 1)
+        | (true, true, false, n) -> collect next n
+    
+    let hStartCords = List.fold (fun s c -> Set.union (collect c 7) s) Set.empty coords
+    Set.toList hStartCords
 
-        let stretchRight = stretch right
-        let stretchLeft = stretch left
-        
-        (stretchLeft c 3, stretchRight c 0)
-    let hLines = List.map f coords
-    hLines
-
-let generateVLines (pp : Map<coord, char>) (board : board) (coords : coord list) : (coord * coord) list = failwith "Not implemented"
-
-let generateHConstraints (dict : Dictionary.Dict) (pp : Map<coord, char>) (board : board) (coords : coord list) : Map<coord, (char -> bool)> = failwith "Not implemented"
-
-let generateVConstraints (dict : Dictionary.Dict) (pp : Map<coord, char>) (board : board) (coords : coord list) : Map<coord, (char -> bool)> =
+let generateConstraints (dict : Dictionary.Dict) (pp : Map<coord, char>) (board : board) (coords : coord list) (stepBack : coord -> coord) (stepForward : coord -> coord) : Map<coord, (char -> bool)> =
     
     let stretch (nextCoord : coord -> coord) (c : coord) =
         let rec stretchR (c : coord) =
@@ -64,17 +56,14 @@ let generateVConstraints (dict : Dictionary.Dict) (pp : Map<coord, char>) (board
             if (board.isOnBoard next |> not) || (Map.containsKey next pp |> not) then c
             else stretchR next
         stretchR c
-    
-    let stretchUp = stretch up
-    let stretchDown = stretch down
 
     let generateVConstraint (c : coord) : (char -> bool) =
-        let upper = stretchUp c
-        let lower = stretchDown c
+        let upper = stretch stepBack c
+        let lower = stretch stepForward c
 
         let constraintFunc (c : coord) (char : char) = 
             let pp' = Map.add c char pp
-            let word = stepFold (fun s c -> s + string(Map.find c pp')) "" upper down (fun c -> (up c) = lower |> not)
+            let word = stepFold (fun s c -> s + string(Map.find c pp')) "" upper stepForward (fun c -> (stepBack c) = lower |> not)
             let valid = Dictionary.lookup word dict
             valid
 
@@ -84,49 +73,60 @@ let generateVConstraints (dict : Dictionary.Dict) (pp : Map<coord, char>) (board
     let constraints = List.fold (fun s c -> Map.add c (generateVConstraint c) s) Map.empty coords
     constraints
 
-let generateHMove (dict : Dictionary.Dict) (pp : Map<coord, char>) (line : coord * coord) (constraints : (coord -> char -> bool)) (hand : MultiSet<(uint32 * (char * int) list)>) (board : board) : move list = 
-    
-    let rec folder (c : coord) (move : move) (dict : Dictionary.Dict) (hand : MultiSet<(uint32 * (char * int) list)>) (moves : move list) (piece : (uint32 * (char * int) list)) (_ : uint32) : move list = 
-        
-        let char, hand', move' = 
-            if Map.containsKey c pp then Map.find c pp, hand, move
-            else 
-                let char = List.head (snd piece)
-                fst char, MultiSet.removeSingle piece hand, (c, (fst piece, char)) :: move //Wildcards always becomes A
+let generateMove (dict : Dictionary.Dict) (pp : Map<coord, char>) (start : coord) (constraints : (coord -> char -> bool)) (hand : MultiSet<(uint32 * (char * int) list)>) (board : board) (coords : coord list) (step : coord -> coord) : move list = 
 
-        match (Dictionary.step char dict, constraints c char) with
-        | (Some (isWord, newDict), true) -> 
-            let accumulatedMoves = moves @ multiFold (right c) move' newDict hand'
-            if isWord then move' :: accumulatedMoves
-            else accumulatedMoves
-        | _ -> moves
+    let rec folder (c : coord) (touchedValidStartPoint : bool) (move : move) (dict : Dictionary.Dict) (hand : MultiSet<(uint32 * (char * int) list)>) (moves : move list) (piece : (uint32 * (char * int) list)) (n : uint32) : move list = 
+        let charPointPairList = snd piece
+        let hand' = MultiSet.removeSingle piece hand
+        let testChar (charPointPair : (char * int)) : move list =
+            let char = fst charPointPair
+            let move' = (c, (fst piece, (charPointPair))) :: move
+            let next = step c
+            let backIsEmpty = Map.containsKey next pp |> not
+            match (Dictionary.step char dict, constraints c char, touchedValidStartPoint && backIsEmpty) with
+            | (Some (true, dict'), true, true) -> move' :: foldOverPlaceablePieces next touchedValidStartPoint move' dict' hand'
+            | (Some (_, dict'), true, _) -> foldOverPlaceablePieces next touchedValidStartPoint move' dict' hand'
+            | _ -> List.empty
 
-    and multiFold (c : coord) (move : move) (dict : Dictionary.Dict) (hand : MultiSet<(uint32 * (char * int) list)>) = 
-        if board.isOnBoard c then MultiSet.fold (folder c move dict hand) List.empty hand
-        else List.Empty
+        moves @ List.fold (fun s (charPointPair) -> s @ testChar charPointPair) List.empty charPointPairList
 
-    let moves = multiFold (fst line) List.empty dict hand
+    and foldOverPlaceablePieces (c : coord) (touchedValidStartPoint : bool) (move : move) (dict : Dictionary.Dict) (hand : MultiSet<(uint32 * (char * int) list)>) = 
+        match (Map.containsKey c pp, board.isOnBoard c) with
+        | (false, true) -> 
+            let touchedValidStartPoint' = touchedValidStartPoint || List.contains c coords
+            MultiSet.fold (folder c touchedValidStartPoint' move dict hand) List.empty hand
+        | (true, true) -> 
+            let char = Map.find c pp
+            let next = step c
+            let backIsEmpty = Map.containsKey next pp |> not
+            match (Dictionary.step char dict, backIsEmpty, touchedValidStartPoint) with
+            | (Some (true, dict'), true, true) -> move :: foldOverPlaceablePieces next touchedValidStartPoint move dict' hand
+            | (Some (_, dict'), _, _) -> foldOverPlaceablePieces next touchedValidStartPoint move dict' hand
+            | _ -> List.empty
+        | (_, false) -> List.Empty
+
+    let moves = foldOverPlaceablePieces start false List.empty dict hand
     moves
 
-let generateVMove (dict : Dictionary.Dict) (pp : Map<coord, char>) (line : coord * coord) (constraints : (coord -> char -> bool)) (hand : MultiSet<(uint32 * char list)>) : move list = failwith "Not implemented"
+let evalMove (m : move) (b : board) : int = 
+    List.fold (fun acc (mov : (coord * (uint32 * (char * int)))) -> acc + (mov |> snd |> snd |> snd)) 0 m
 
+let calculateMoveValues (moves : move list) (board : board) : ((int * move) list) = 
+    moves 
+        |> List.map (fun move -> (evalMove move board, move))
+        |> List.sortByDescending (fun (eval, _) -> eval)
 
 let generateMoves (dict : Dictionary.Dict) (pp : Map<coord, char>) (board : board) (hand : MultiSet<(uint32 * (char * int) list)>) : ((int * move) list) = 
     let coords = generateCoords pp board
     //DebugPrint.forcePrint (sprintf "Coords: %A\n" coords)
-    let hLines = generateHLines pp board coords
-    //DebugPrint.forcePrint (sprintf "hlines: %A\n" hLines)
-    let vConstraints = checkConstraint (generateVConstraints dict pp board coords)
-    let hMoves = List.fold (fun ms l -> ms @ (generateHMove dict pp l vConstraints hand board)) List.empty hLines
+    let hStartCoords = generateStartCoords pp board coords left
+    let vStartCoords = generateStartCoords pp board coords up
+    //DebugPrint.forcePrint (sprintf "hlines: %A\n" hStartCoords)
+    let vConstraints = checkConstraint (generateConstraints dict pp board coords up down)
+    let hConstraints = checkConstraint (generateConstraints dict pp board coords left right)
+    let hMoves = List.fold (fun ms c -> ms @ (generateMove dict pp c vConstraints hand board coords right)) List.empty hStartCoords
+    let vMoves = List.fold (fun ms c -> ms @ (generateMove dict pp c hConstraints hand board coords down)) List.empty vStartCoords
+    let moves = hMoves @ vMoves
 
-    let evalMove (m : move) (b : board) : int = 
-        List.fold (fun acc (mov : (coord * (uint32 * (char * int)))) -> acc + (mov |> snd |> snd |> snd)) 0 m
-
-    let calculateMoveValues (moves : move list) (board : board) : ((int * move) list) = 
-        moves 
-            |> List.map (fun move -> (evalMove move board, move))
-            |> List.sortByDescending (fun (eval, _) -> eval)
-
-    let moveValues = calculateMoveValues hMoves board
-
+    let moveValues = calculateMoveValues moves board
     moveValues

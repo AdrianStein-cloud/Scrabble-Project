@@ -24,16 +24,16 @@ let main argv =
     System.Console.ForegroundColor <- System.ConsoleColor.Black
     System.Console.Clear()
 
-    let board        = ScrabbleUtil.StandardBoard.standardBoard ()
-//    let board      = ScrabbleUtil.InfiniteBoard.infiniteBoard ()
+    //let board        = ScrabbleUtil.StandardBoard.standardBoard ()
+    //let board      = ScrabbleUtil.InfiniteBoard.infiniteBoard ()
 
 //    let board      = ScrabbleUtil.RandomBoard.randomBoard ()
 //    let board      = ScrabbleUtil.RandomBoard.randomBoardSeed (Some 42)
 //    let board      = ScrabbleUtil.InfiniteRandomBoard.infiniteRandomBoard ()
 //    let board      = ScrabbleUtil.InfiniteRandomBoard.infiniteRandomBoardSeed (Some 42)
 
-//    let board      = ScrabbleUtil.HoleBoard.holeBoard ()
-//    let board      = ScrabbleUtil.InfiniteHoleBoard.infiniteHoleBoard ()
+    let board      = ScrabbleUtil.HoleBoard.holeBoard ()
+    //let board      = ScrabbleUtil.InfiniteHoleBoard.infiniteHoleBoard ()
 
     let words     = readLines "../../../Dictionaries/English.txt"
 
@@ -53,8 +53,8 @@ let main argv =
         time (fun () -> ScrabbleUtil.Dictionary.mkDict words dictAPI)
 
     //let players    = [("ScrapGPT", dictionary, ScrabbleBot.Scrabble.startGame)]
-
-    let players = spawnMultiples "ScrapGPT" dictionary ScrabbleBot.Scrabble.startGame 2
+    let players = [("ScrapGPT", dictionary, ScrabbleBot.Scrabble.startGame); ("OxyphenButazone", dictionary, Oxyphenbutazone.Scrabble.startGame)]
+    //let players = spawnMultiples "ScrapGPT" dictionary ScrabbleBot.Scrabble.startGame 2
     //let players = [("ScrapGPT", dictionary, ScrabbleBot.Scrabble.startGame), ("OxyphenButazone", dictionary, Oxyphenbutazone.Scrabble.startGame)]
     //let players = spawnMultiples "OxyphenButazone" dictionary Oxyphenbutazone.Scrabble.startGame 2
     

@@ -65,24 +65,29 @@ module Scrabble =
                 //forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
 
                 let gHand = MultiSet.fold (fun s pid n -> MultiSet.add (pid, (Map.find pid pieces |> Set.map (fun t -> t) |> Set.toList)) n s) MultiSet.empty st.hand
-                let moves = (MoveGeneration.generateMoves st.dict st.placedPieces st.board gHand)
+                let moves = MoveGeneration.generateMoves st.dict st.placedPieces st.board gHand
                 //forcePrint (sprintf "---- Moves ---- \n%A\n\n" moves)
 
-                //let input =  System.Console.ReadLine()
-                let move = (List.head moves) |> snd
-                forcePrint (sprintf ("Trying to play: %A\n") (List.head moves |> snd))
+                match moves.Length with
+                | 0 -> send cstream (SMChange (MultiSet.fold (fun s pid _ -> pid :: s) [] st.hand))
+                | _ -> 
+                    (*let input =  System.Console.ReadLine()
+                    let move = List.item (int (input)) moves |> snd*)
+                    let move = (List.head moves) |> snd
+                    debugPrint (sprintf "Player %d -> Server:\n%A\n" (st.playerNumber) move) // keep the debug lines. They are useful.
+                    send cstream (SMPlay move)
+                //let move = RegEx.parseMove input
+                (*let move = (List.head moves) |> snd
+                forcePrint (sprintf ("Trying to play: %A\n") (List.head moves |> snd))*)
                
 
                 //let move0onboard = st.board.isOnBoard (fst move[0])
-
-                debugPrint (sprintf "Player %d -> Server:\n%A\n" (st.playerNumber) move) // keep the debug lines. They are useful.
-                send cstream (SMPlay move)
             
 
-            forcePrint (sprintf "Turn: %A\n" st.playerTurn)
+            //forcePrint (sprintf "Turn: %A\n" st.playerTurn)
 
             let msg = recv cstream
-            debugPrint (sprintf "Player %d <- Server:\n%A\n" (st.playerNumber) msg) // keep the debug lines. They are useful.
+            //debugPrint (sprintf "Player %d <- Server:\n%A\n" (st.playerNumber) msg) // keep the debug lines. They are useful.
 
             let updatePlacedPieces (ms : (coord * (uint32 * (char * int)))list) (pp : Map<coord, char>) =
                 List.fold (fun x y -> Map.add (fst y) (y |> snd |> snd |> fst) x) pp ms
@@ -135,8 +140,9 @@ module Scrabble =
                 let st' = {st with playerTurn = updatePlayerTurn st}
                 aux st'
             | RCM (CMGameOver _) -> ()
+            | RCM (CMChangeSuccess pieces) -> failwith "Not implemented"
             | RCM a -> failwith (sprintf "not implmented: %A" a)
-            | RGPE err -> printfn "Gameplay Error:\n%A" err; aux st
+            | RGPE err -> printfn "Gameplay Error:\n%A\n" err; printfn "Placed Pieces:\n%A\n" st.placedPieces; aux st
 
 
         aux st

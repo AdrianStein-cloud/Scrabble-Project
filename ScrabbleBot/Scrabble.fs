@@ -62,14 +62,17 @@ module Scrabble =
             Print.printHand pieces (st.hand)
             if (st.playerNumber = st.playerTurn) then
                 // remove the force print when you move on from manual input (or when you have learnt the format)
-                forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
+                //forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
 
-                let gHand = MultiSet.fold (fun s pid n -> MultiSet.add (pid, (Map.find pid pieces |> Set.map (fun t -> fst t) |> Set.toList)) n s) MultiSet.empty st.hand
-                forcePrint (sprintf "---- Moves ---- \n%A\n\n" (MoveGeneration.generateMoves st.dict st.placedPieces st.board gHand))
+                let gHand = MultiSet.fold (fun s pid n -> MultiSet.add (pid, (Map.find pid pieces |> Set.map (fun t -> t) |> Set.toList)) n s) MultiSet.empty st.hand
+                let moves = (MoveGeneration.generateMoves st.dict st.placedPieces st.board gHand)
+                //forcePrint (sprintf "---- Moves ---- \n%A\n\n" moves)
 
-                let input =  System.Console.ReadLine()
-                let move = RegEx.parseMove input
-                
+                //let input =  System.Console.ReadLine()
+                let move = (List.head moves) |> snd
+                forcePrint (sprintf ("Trying to play: %A") (List.head moves |> snd))
+               
+
                 //let move0onboard = st.board.isOnBoard (fst move[0])
 
                 debugPrint (sprintf "Player %d -> Server:\n%A\n" (st.playerNumber) move) // keep the debug lines. They are useful.

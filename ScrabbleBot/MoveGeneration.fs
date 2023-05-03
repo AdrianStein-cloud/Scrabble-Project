@@ -3,7 +3,7 @@ open ScrabbleUtil
 open Parser
 open MultiSet
 
-type move = (coord * (uint32 * char)) list
+type move = (coord * (uint32 * (char * int))) list
 
 let right (c : coord) : coord = (fst c + 1, snd c)
 let left (c : coord) : coord = (fst c - 1, snd c)
@@ -84,15 +84,15 @@ let generateVConstraints (dict : Dictionary.Dict) (pp : Map<coord, char>) (board
     let constraints = List.fold (fun s c -> Map.add c (generateVConstraint c) s) Map.empty coords
     constraints
 
-let generateHMove (dict : Dictionary.Dict) (pp : Map<coord, char>) (line : coord * coord) (constraints : (coord -> char -> bool)) (hand : MultiSet<(uint32 * char list)>) : move list = 
+let generateHMove (dict : Dictionary.Dict) (pp : Map<coord, char>) (line : coord * coord) (constraints : (coord -> char -> bool)) (hand : MultiSet<(uint32 * (char * int) list)>) (board : board) : move list = 
     
-    let rec folder (c : coord) (move : move) (dict : Dictionary.Dict) (hand : MultiSet<(uint32 * char list)>) (moves : move list) (piece : (uint32 * char list)) (_ : uint32) : move list = 
+    let rec folder (c : coord) (move : move) (dict : Dictionary.Dict) (hand : MultiSet<(uint32 * (char * int) list)>) (moves : move list) (piece : (uint32 * (char * int) list)) (_ : uint32) : move list = 
         
         let char, hand', move' = 
             if Map.containsKey c pp then Map.find c pp, hand, move
             else 
                 let char = List.head (snd piece)
-                char, MultiSet.removeSingle piece hand, (c, (fst piece, char)) :: move //Wildcards always becomes A
+                fst char, MultiSet.removeSingle piece hand, (c, (fst piece, char)) :: move //Wildcards always becomes A
 
         match (Dictionary.step char dict, constraints c char) with
         | (Some (isWord, newDict), true) -> 
@@ -101,8 +101,9 @@ let generateHMove (dict : Dictionary.Dict) (pp : Map<coord, char>) (line : coord
             else accumulatedMoves
         | _ -> moves
 
-    and multiFold (c : coord) (move : move) (dict : Dictionary.Dict) (hand : MultiSet<(uint32 * char list)>) = 
-        MultiSet.fold (folder c move dict hand) List.empty hand 
+    and multiFold (c : coord) (move : move) (dict : Dictionary.Dict) (hand : MultiSet<(uint32 * (char * int) list)>) = 
+        if board.isOnBoard c then MultiSet.fold (folder c move dict hand) List.empty hand
+        else List.Empty
 
     let moves = multiFold (fst line) List.empty dict hand
     moves
@@ -110,11 +111,22 @@ let generateHMove (dict : Dictionary.Dict) (pp : Map<coord, char>) (line : coord
 let generateVMove (dict : Dictionary.Dict) (pp : Map<coord, char>) (line : coord * coord) (constraints : (coord -> char -> bool)) (hand : MultiSet<(uint32 * char list)>) : move list = failwith "Not implemented"
 
 
-let generateMoves (dict : Dictionary.Dict) (pp : Map<coord, char>) (board : board) (hand : MultiSet<(uint32 * char list)>) : move list = 
+let generateMoves (dict : Dictionary.Dict) (pp : Map<coord, char>) (board : board) (hand : MultiSet<(uint32 * (char * int) list)>) : ((int * move) list) = 
     let coords = generateCoords pp board
-    DebugPrint.forcePrint (sprintf "Coords: %A\n" coords)
+    //DebugPrint.forcePrint (sprintf "Coords: %A\n" coords)
     let hLines = generateHLines pp board coords
-    DebugPrint.forcePrint (sprintf "hlines: %A\n" hLines)
+    //DebugPrint.forcePrint (sprintf "hlines: %A\n" hLines)
     let vConstraints = checkConstraint (generateVConstraints dict pp board coords)
-    let hMoves = List.fold (fun ms l -> ms @ (generateHMove dict pp l vConstraints hand)) List.empty hLines
-    hMoves
+    let hMoves = List.fold (fun ms l -> ms @ (generateHMove dict pp l vConstraints hand board)) List.empty hLines
+
+    let evalMove (m : move) (b : board) : int = 
+        List.fold (fun acc (mov : (coord * (uint32 * (char * int)))) -> acc + (mov |> snd |> snd |> snd)) 0 m
+
+    let calculateMoveValues (moves : move list) (board : board) : ((int * move) list) = 
+        moves 
+            |> List.map (fun move -> (evalMove move board, move))
+            |> List.sortByDescending (fun (eval, _) -> eval)
+
+    let moveValues = calculateMoveValues hMoves board
+
+    moveValues

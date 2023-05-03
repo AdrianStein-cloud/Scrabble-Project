@@ -48,7 +48,7 @@ let generateHLines (pp : Map<coord, char>) (board : board) (coords : coord list)
         let stretchRight = stretch right
         let stretchLeft = stretch left
         
-        (stretchLeft c 0, stretchRight c 3)
+        (stretchLeft c 3, stretchRight c 0)
     let hLines = List.map f coords
     hLines
 

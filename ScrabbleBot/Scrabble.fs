@@ -70,7 +70,7 @@ module Scrabble =
 
                 //let input =  System.Console.ReadLine()
                 let move = (List.head moves) |> snd
-                forcePrint (sprintf ("Trying to play: %A") (List.head moves |> snd))
+                forcePrint (sprintf ("Trying to play: %A\n") (List.head moves |> snd))
                
 
                 //let move0onboard = st.board.isOnBoard (fst move[0])
@@ -79,6 +79,7 @@ module Scrabble =
                 send cstream (SMPlay move)
             
 
+            forcePrint (sprintf "Turn: %A\n" st.playerTurn)
 
             let msg = recv cstream
             debugPrint (sprintf "Player %d <- Server:\n%A\n" (st.playerNumber) msg) // keep the debug lines. They are useful.
@@ -86,9 +87,10 @@ module Scrabble =
             let updatePlacedPieces (ms : (coord * (uint32 * (char * int)))list) (pp : Map<coord, char>) =
                 List.fold (fun x y -> Map.add (fst y) (y |> snd |> snd |> fst) x) pp ms
 
-            let updatePlayerTurn (st : State.state) = st.playerTurn //(st.playerTurn + (uint32)1) % st.playerAmount
-
-            let validPositions (st : State.state) = ""
+            let updatePlayerTurn (st : State.state) = 
+                let newTurn = st.playerTurn + 1u
+                if (newTurn > st.playerAmount) then 1u
+                else newTurn
 
             match msg with
             | RCM (CMPlaySuccess(ms, points, newPieces)) ->
@@ -130,7 +132,7 @@ module Scrabble =
                 // ???
                 //Change turn
 
-                let st' = st // This state needs to be updated
+                let st' = {st with playerTurn = updatePlayerTurn st}
                 aux st'
             | RCM (CMGameOver _) -> ()
             | RCM a -> failwith (sprintf "not implmented: %A" a)

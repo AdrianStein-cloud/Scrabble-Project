@@ -71,12 +71,12 @@ module Scrabble =
                 match moves.Length with
                 | 0 -> send cstream (SMChange (MultiSet.fold (fun s pid _ -> pid :: s) [] st.hand))
                 | _ -> 
-                    (*let input =  System.Console.ReadLine()
-                    let move = List.item (int (input)) moves |> snd*)
-                    let move = (List.head moves) |> snd
+                    let input =  System.Console.ReadLine()
+                    //let move = List.item (int (input)) moves |> snd
+                    //let move = (List.head moves) |> snd
+                    let move = RegEx.parseMove input
                     debugPrint (sprintf "Player %d -> Server:\n%A\n" (st.playerNumber) move) // keep the debug lines. They are useful.
                     send cstream (SMPlay move)
-                //let move = RegEx.parseMove input
                 (*let move = (List.head moves) |> snd
                 forcePrint (sprintf ("Trying to play: %A\n") (List.head moves |> snd))*)
                
@@ -141,11 +141,12 @@ module Scrabble =
                 aux st'
             | RCM (CMGameOver _) -> ()
             | RCM (CMChangeSuccess pieces) -> failwith "Not implemented"
-            | RCM (CMForfeit player) -> 
-                List.removeAt ((int)player) st.players |> ignore
+            | RCM (CMChange (playerId, numOfTiles)) -> failwith "Not implemented"
+            | RCM (CMForfeit playerId) -> 
+                List.removeAt ((int)playerId) st.players |> ignore
                 let st' = {st with turnId = updatePlayerTurn st}
                 aux st'
-            | RCM a -> failwith (sprintf "not implmented: %A" a)
+            | RCM (CMPassed playerId) | RCM (CMTimeout playerId) -> failwith "Not implemented"
             | RGPE err -> printfn "Gameplay Error:\n%A\n" err; printfn "Placed Pieces:\n%A\n" st.placedPieces; aux st
 
 

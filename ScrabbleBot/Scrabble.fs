@@ -46,12 +46,12 @@ module State =
         dict          : ScrabbleUtil.Dictionary.Dict
         playerNumber  : uint32
         hand          : MultiSet.MultiSet<uint32>
-        playerTurn    : uint32
+        turnId        : uint32
         placedPieces  : Map<coord, char>
-        playerAmount  : uint32
+        players       : List<uint32>
     }
 
-    let mkState b d pn h pt np = {board = b; dict = d;  playerNumber = pn; hand = h; playerTurn = pt; placedPieces = Map.empty; playerAmount = np}
+    let mkState b d pn h pt np = {board = b; dict = d;  playerNumber = pn; hand = h; turnId = pt - 1u; placedPieces = Map.empty; players = [1u..np]}
 
 module Scrabble =
     open System.Threading
@@ -60,7 +60,7 @@ module Scrabble =
 
         let rec aux (st : State.state) =
             Print.printHand pieces (st.hand)
-            if (st.playerNumber = st.playerTurn) then
+            if (st.playerNumber = st.players[(int)st.turnId]) then
                 // remove the force print when you move on from manual input (or when you have learnt the format)
                 //forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
 
@@ -93,8 +93,8 @@ module Scrabble =
                 List.fold (fun x y -> Map.add (fst y) (y |> snd |> snd |> fst) x) pp ms
 
             let updatePlayerTurn (st : State.state) = 
-                let newTurn = st.playerTurn + 1u
-                if (newTurn > st.playerAmount) then 1u
+                let newTurn = st.turnId + 1u
+                if ((int)newTurn >= st.players.Length) then 0u
                 else newTurn
 
             match msg with
@@ -119,7 +119,7 @@ module Scrabble =
                 //Change turn
                 
 
-                let st' = {st with hand = newHand; placedPieces = newPlacedPieces; playerTurn = updatePlayerTurn st}
+                let st' = {st with hand = newHand; placedPieces = newPlacedPieces; turnId = updatePlayerTurn st}
                 aux st'
             | RCM (CMPlayed (pid, ms, points)) ->
                 (* Successful play by other player. Update your state *)
@@ -129,7 +129,7 @@ module Scrabble =
 
                 //Change turn
 
-                let st' = {st with placedPieces = newPlacedPieces; playerTurn = updatePlayerTurn st}
+                let st' = {st with placedPieces = newPlacedPieces; turnId = updatePlayerTurn st}
                 aux st'
             | RCM (CMPlayFailed (pid, ms)) ->
                 (* Failed play. Update your state *)
@@ -137,10 +137,14 @@ module Scrabble =
                 // ???
                 //Change turn
 
-                let st' = {st with playerTurn = updatePlayerTurn st}
+                let st' = {st with turnId = updatePlayerTurn st}
                 aux st'
             | RCM (CMGameOver _) -> ()
             | RCM (CMChangeSuccess pieces) -> failwith "Not implemented"
+            | RCM (CMForfeit player) -> 
+                List.removeAt ((int)player) st.players |> ignore
+                let st' = {st with turnId = updatePlayerTurn st}
+                aux st'
             | RCM a -> failwith (sprintf "not implmented: %A" a)
             | RGPE err -> printfn "Gameplay Error:\n%A\n" err; printfn "Placed Pieces:\n%A\n" st.placedPieces; aux st
 

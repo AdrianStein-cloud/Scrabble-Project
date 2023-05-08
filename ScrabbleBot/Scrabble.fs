@@ -49,9 +49,10 @@ module State =
         turnId        : uint32
         placedPieces  : Map<coord, char>
         players       : List<uint32>
+        piecesLeft    : uint32
     }
 
-    let mkState b d pn h pt np = {board = b; dict = d;  playerNumber = pn; hand = h; turnId = pt - 1u; placedPieces = Map.empty; players = [1u..np]}
+    let mkState b d pn h pt np = {board = b; dict = d;  playerNumber = pn; hand = h; turnId = pt - 1u; placedPieces = Map.empty; players = [1u..np]; piecesLeft = 100u - ((MultiSet.size h) * np)}
 
 module Scrabble =
     open System.Threading
@@ -59,6 +60,7 @@ module Scrabble =
     let playGame cstream (pieces : Map<uint32, tile>) (st : State.state) =
 
         let rec aux (st : State.state) =
+            //let mutable swappedPieces : (uint32 * uint32) list = []
             Print.printHand pieces (st.hand)
             if (st.playerNumber = st.players[(int)st.turnId]) then
                 // remove the force print when you move on from manual input (or when you have learnt the format)
@@ -71,10 +73,10 @@ module Scrabble =
                 match moves.Length with
                 | 0 -> send cstream (SMChange (MultiSet.fold (fun s pid _ -> pid :: s) [] st.hand))
                 | _ -> 
-                    let input =  System.Console.ReadLine()
+                    //let input =  System.Console.ReadLine()
                     //let move = List.item (int (input)) moves |> snd
-                    //let move = (List.head moves) |> snd
-                    let move = RegEx.parseMove input
+                    let move = (List.head moves) |> snd
+                    //let move = RegEx.parseMove input
                     debugPrint (sprintf "Player %d -> Server:\n%A\n" (st.playerNumber) move) // keep the debug lines. They are useful.
                     send cstream (SMPlay move)
                 (*let move = (List.head moves) |> snd
@@ -119,7 +121,7 @@ module Scrabble =
                 //Change turn
                 
 
-                let st' = {st with hand = newHand; placedPieces = newPlacedPieces; turnId = updatePlayerTurn st}
+                let st' = {st with hand = newHand; placedPieces = newPlacedPieces; turnId = updatePlayerTurn st; piecesLeft = st.piecesLeft - (uint32)(List.length ms)}
                 aux st'
             | RCM (CMPlayed (pid, ms, points)) ->
                 (* Successful play by other player. Update your state *)
@@ -129,7 +131,7 @@ module Scrabble =
 
                 //Change turn
 
-                let st' = {st with placedPieces = newPlacedPieces; turnId = updatePlayerTurn st}
+                let st' = {st with placedPieces = newPlacedPieces; turnId = updatePlayerTurn st; piecesLeft = st.piecesLeft - (uint32)(List.length ms)}
                 aux st'
             | RCM (CMPlayFailed (pid, ms)) ->
                 (* Failed play. Update your state *)
@@ -140,13 +142,21 @@ module Scrabble =
                 let st' = {st with turnId = updatePlayerTurn st}
                 aux st'
             | RCM (CMGameOver _) -> ()
-            | RCM (CMChangeSuccess pieces) -> failwith "Not implemented"
-            | RCM (CMChange (playerId, numOfTiles)) -> failwith "Not implemented"
-            | RCM (CMForfeit playerId) -> 
-                List.removeAt ((int)playerId) st.players |> ignore
+            | RCM (CMChangeSuccess pieces) -> 
+                
+                let newHand = List.fold (fun m p -> (MultiSet.add (fst p) (snd p) m)) st.hand pieces
+
+                let st' = st
+                aux st'
+            | RCM (CMChange (playerId, numOfTiles)) -> 
                 let st' = {st with turnId = updatePlayerTurn st}
                 aux st'
-            | RCM (CMPassed playerId) | RCM (CMTimeout playerId) -> failwith "Not implemented"
+            | RCM (CMForfeit playerId) -> 
+                let st' = {st with turnId = updatePlayerTurn st; players = List.removeAt ((int)playerId) st.players; piecesLeft = st.piecesLeft + (MultiSet.size st.hand)}
+                aux st'
+            | RCM (CMPassed playerId) | RCM (CMTimeout playerId) -> 
+                let st' = {st with turnId = updatePlayerTurn st}
+                aux st'
             | RGPE err -> printfn "Gameplay Error:\n%A\n" err; printfn "Placed Pieces:\n%A\n" st.placedPieces; aux st
 
 

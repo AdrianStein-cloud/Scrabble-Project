@@ -60,36 +60,26 @@ module Scrabble =
     let playGame cstream (pieces : Map<uint32, tile>) (st : State.state) =
 
         let rec aux (st : State.state) =
-            //let mutable swappedPieces : (uint32 * uint32) list = []
-            Print.printHand pieces (st.hand)
+            let mutable swappedPieces : uint32 list = []
             if (st.playerNumber = st.players[(int)st.turnId]) then
-                // remove the force print when you move on from manual input (or when you have learnt the format)
-                //forcePrint "Input move (format '(<x-coordinate> <y-coordinate> <piece id><character><point-value> )*', note the absence of space between the last inputs)\n\n"
 
                 let gHand = MultiSet.fold (fun s pid n -> MultiSet.add (pid, (Map.find pid pieces |> Set.map (fun t -> t) |> Set.toList)) n s) MultiSet.empty st.hand
                 let moves = MoveGeneration.generateMoves st.dict st.placedPieces st.board gHand
-                //forcePrint (sprintf "---- Moves ---- \n%A\n\n" moves)
-
                 match moves.Length with
-                | 0 -> send cstream (SMChange (MultiSet.fold (fun s pid _ -> pid :: s) [] st.hand))
+                | 0 -> 
+                    if st.piecesLeft > 0u then
+                        swappedPieces <- MultiSet.fold (fun s1 pid n -> s1 @ List.fold (fun s2 _ -> if s1.Length + s2.Length < int st.piecesLeft then pid :: s2 else s2) [] [1..int n]) [] st.hand
+                        send cstream (SMChange swappedPieces)
+                    else send cstream SMPass
                 | _ -> 
-                    //let input =  System.Console.ReadLine()
-                    //let move = List.item (int (input)) moves |> snd
                     let move = (List.head moves) |> snd
-                    //let move = RegEx.parseMove input
-                    debugPrint (sprintf "Player %d -> Server:\n%A\n" (st.playerNumber) move) // keep the debug lines. They are useful.
+                    debugPrint (sprintf "Player %d -> Server:\n%A\n" (st.playerNumber) move) 
                     send cstream (SMPlay move)
-                (*let move = (List.head moves) |> snd
-                forcePrint (sprintf ("Trying to play: %A\n") (List.head moves |> snd))*)
-               
-
-                //let move0onboard = st.board.isOnBoard (fst move[0])
             
 
-            //forcePrint (sprintf "Turn: %A\n" st.playerTurn)
 
             let msg = recv cstream
-            //debugPrint (sprintf "Player %d <- Server:\n%A\n" (st.playerNumber) msg) // keep the debug lines. They are useful.
+            debugPrint (sprintf "Player %d <- Server:\n%A\n" (st.playerNumber) msg)
 
             let updatePlacedPieces (ms : (coord * (uint32 * (char * int)))list) (pp : Map<coord, char>) =
                 List.fold (fun x y -> Map.add (fst y) (y |> snd |> snd |> fst) x) pp ms
@@ -101,13 +91,11 @@ module Scrabble =
 
             match msg with
             | RCM (CMPlaySuccess(ms, points, newPieces)) ->
-                (* Successful play by you. Update your state (remove old tiles, add the new ones, change turn, etc) *)
 
                 //Update board
                 let newPlacedPieces = updatePlacedPieces ms st.placedPieces
 
                 //Update hand
-
                 let remove (m : MultiSet.MultiSet<uint32>) (tilePlacementMove : coord * (uint32 * (char * int))) : MultiSet.MultiSet<uint32> = 
                     let pieceId = tilePlacementMove |> snd |> fst
                     MultiSet.removeSingle pieceId m
@@ -117,36 +105,28 @@ module Scrabble =
                 let mutable newHand = st.hand
                 newHand <- List.fold remove newHand ms
                 newHand <- List.fold add newHand newPieces
-
-                //Change turn
                 
 
                 let st' = {st with hand = newHand; placedPieces = newPlacedPieces; turnId = updatePlayerTurn st; piecesLeft = st.piecesLeft - (uint32)(List.length ms)}
                 aux st'
             | RCM (CMPlayed (pid, ms, points)) ->
-                (* Successful play by other player. Update your state *)
 
                 //Update board
                 let newPlacedPieces = updatePlacedPieces ms st.placedPieces
 
-                //Change turn
-
                 let st' = {st with placedPieces = newPlacedPieces; turnId = updatePlayerTurn st; piecesLeft = st.piecesLeft - (uint32)(List.length ms)}
                 aux st'
             | RCM (CMPlayFailed (pid, ms)) ->
-                (* Failed play. Update your state *)
-
-                // ???
-                //Change turn
 
                 let st' = {st with turnId = updatePlayerTurn st}
                 aux st'
             | RCM (CMGameOver _) -> ()
             | RCM (CMChangeSuccess pieces) -> 
                 
-                let newHand = List.fold (fun m p -> (MultiSet.add (fst p) (snd p) m)) st.hand pieces
-
-                let st' = st
+                let mutable newHand = st.hand
+                newHand <- List.fold (fun m p -> MultiSet.removeSingle p m) newHand swappedPieces
+                newHand <- List.fold (fun m p -> (MultiSet.add (fst p) (snd p) m)) newHand pieces
+                let st' = {st with turnId = updatePlayerTurn st; hand = newHand}
                 aux st'
             | RCM (CMChange (playerId, numOfTiles)) -> 
                 let st' = {st with turnId = updatePlayerTurn st}
@@ -157,7 +137,7 @@ module Scrabble =
             | RCM (CMPassed playerId) | RCM (CMTimeout playerId) -> 
                 let st' = {st with turnId = updatePlayerTurn st}
                 aux st'
-            | RGPE err -> printfn "Gameplay Error:\n%A\n" err; printfn "Placed Pieces:\n%A\n" st.placedPieces; aux st
+            | RGPE err -> debugPrint (sprintf "Gameplay Error:\n%A\n" err); aux st
 
 
         aux st
